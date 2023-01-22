@@ -2,47 +2,100 @@ package main
 
 import (
 	"context"
-	"fmt"
+	"log"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"github.com/rs/zerolog" //Eklenecek.
+	"github.com/rs/zerolog/log"
+
+	"github.com/samcho07/getir-test-case-MS/data"
+	"github.com/samcho07/getir-test-case-MS/data/store"
 )
+
+/*
+func Init() {
+	log.Logger = logger
+}
+
+func Error(msg error) {
+	log.Logger.Error().Err(msg)
+}
+
+func Info(msg string) {
+	log.Logger.Info().Msg(msg)
+}
+*/
+
+var Logger = zerolog.New(os.Stderr).With().Timestamp().Logger()
+
+func StatusCheck(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("Allrgiht..."))
+}
 
 func main() {
 	// Connect to MongoDB
-	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb+srv://challengeUser:WUMglwNBaydH8Yvu@cluster0.jugvyba.mongodb.net/?retryWrites=true&w=majority"))
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	err = client.Connect(context.TODO())
-	if err != nil {
-		fmt.Println(err)
-		return
+	MongoDB_Server = new(search.mongodb)
+	log.Logger = Logger
+
+	Hold := store.NewCacheProvider()
+	dataHand := data.New(Hold)
+
+	http.HandleFunc("/in-memory", dataHandler.GetInMemory)
+	http.HandleFunc("/in-memory/", dataHandler.SetInMemory)
+	http.HandleFunc("/records", mongoServer.SearchMongo)
+	http.HandleFunc("/", StatusCheck)
+
+	// connectting the server.
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
 	}
 
-	// Get a handle to the "users" collection
-	collection := client.Database("mydb").Collection("users")
+	httpServer := &http.Server{
+		Addr: ":" + port,
+	}
 
-	// Find all users with age >= 25 and sort by name in ascending order
-	filter := bson.M{"age": bson.M{"$gte": 25}}
-	projection := bson.M{"name": 1}
-	sort := bson.M{"name": 1}
-	cursor, err := collection.Find(context.TODO(), filter, options.Find().SetProjection(projection).SetSort(sort))
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	defer cursor.Close(context.TODO())
+	log.Logger.Info().Msg("App has been started at 8080...")
 
-	// Iterate through the documents and print them
-	var users []interface{}
-	if err = cursor.All(context.TODO(), &users); err != nil {
-		fmt.Println(err)
+	go func() {
+		if err := httpServer.ListenAndServe(); err != http.ErrServerClosed {
+			log.Fatalf("HTTP server ListenAndServe: %v", err)
+		}
+	}()
+
+	// making an channel and go routine..
+	signalChan := make(chan os.Signal, 1)
+
+	signal.Notify(
+		signalChan,
+		syscall.SIGHUP,
+		syscall.SIGINT,
+		syscall.SIGQUIT,
+	)
+
+	<-signalChan
+	log.Print("Interrupt closed..\n")
+
+	go func() {
+		<-signalChan
+		log.Fatal("Kill terminate..\n")
+	}()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err := httpServer.Shutdown(ctx); err != nil {
+		log.Printf("error handled: %v\n", err)
+		defer os.Exit(1)
 		return
+	} else {
+		log.Printf("stopped\n")
 	}
-	for _, user := range users {
-		fmt.Println(user)
-	}
+
+	defer os.Exit(0)
+
 }

@@ -14,6 +14,11 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/rs/zerolog v1.28.0 // indirect
 	github.com/samcho07/getir-test-case-MS v0.0.0-20230120165835-4875a0219d08 // indirect
+	//github.com/samcho07/getir-test-case-MS/data v0.0.0
+	github.com/samcho07/getir-test-case-MS/data/store v0.0.0
+	github.com/samcho07/getir-test-case-MS/data/database v0.0.0
+	github.com/samcho07/getir-test-case-MS/model v0.0.0
+	github.com/samcho07/getir-test-case-MS/search v0.0.0
 	github.com/xdg-go/pbkdf2 v1.0.0 // indirect
 	github.com/xdg-go/scram v1.1.1 // indirect
 	github.com/xdg-go/stringprep v1.0.3 // indirect

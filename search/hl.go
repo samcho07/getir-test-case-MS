@@ -3,7 +3,8 @@ package search
 import (
 	"encoding/json"
 	"net/http"
-	//github linkleri....
+
+	"github.com/samcho07/getir-test-case-MS/model/"
 )
 
 type mongodb struct{}

@@ -17,16 +17,16 @@ Please clone this repo into your local machine.
 
 Sample Input:
 
-{
-"startDate": "2016-01-26",
-"endDate": "2018-02-02",
-"minCount": 2700,
-"maxCount": 3000
-}
+    {
+    "startDate": "2016-01-21",
+    "endDate": "2016-03-02",
+    "minCount": 2900,
+    "maxCount": 3000
+    }
 
 Response;
 
-{
+    {
     "code":0,
     "msg":"Success",
     "records": [
@@ -41,7 +41,7 @@ Response;
               "totalCount":2900
               }
                 ]
-}
+    }
 
 
 

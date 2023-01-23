@@ -1,21 +1,20 @@
 package data
 
-import(
-	
+import (
 	"log"
-	"github.com/BurntSushi/toml"
 
+	"github.com/BurntSushi/toml"
 )
 
-type conf struct{
-	MongoDB_Server string
+type conf struct {
+	MongoDB_Server   string
 	MongoDB_Database string
 }
 
-func(c *conf)Read(){
+func (c *conf) Read() {
 
 	// Making error.
-	if _,err = :=toml.DecodeFile("conf.toml", &c); err != nil{
+	if _, err := toml.DecodeFile("conf.toml", &c); err != nil {
 		log.Fatal(err)
 	}
 }
